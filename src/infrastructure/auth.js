@@ -16,4 +16,5 @@ export const auth = betterAuth({
     },
     debug: true,
     database: new Database("database.sqlite"),
+    trustedOrigins: (process.env.TRUSTED_ORIGINS || 'http://localhost:3000').split(','),
 });
