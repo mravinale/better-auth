@@ -209,28 +209,6 @@ const swaggerDefinition = {
         }
       }
     },
-
-    '/api/auth/signout': {
-      post: {
-        summary: 'Sign out the current user',
-        tags: ['Better Auth'],
-        responses: {
-          200: {
-            description: 'User signed out',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean', example: true }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
   },
   components: {
     securitySchemes: {

@@ -45,14 +45,13 @@ Create a `.env` file in the root directory with the following variables:
 
 ```
 # Server Configuration
-PORT=3000
+PORT=3005
 NODE_ENV=development
 
 # Better Auth Configuration
 AUTH_SECRET=your-secure-secret-key-here
-BASE_URL=http://localhost:3000
-
-
+BASE_URL=http://localhost:3005
+TRUSTED_ORIGINS=http://localhost:3000
 ```
 
 ## Available Endpoints
@@ -63,13 +62,42 @@ BASE_URL=http://localhost:3000
 - `POST /api/auth/sign-out` - User logout
 - `GET /api/protected` - Protected endpoint (requires Bearer token)
 
+## API Documentation
+
+Interactive API documentation is available at: [http://localhost:3005/docs](http://localhost:3005/docs)
+
 ## Development
 
-To start the development server:
+### Prerequisites
+- Node.js 16+
+- Yarn
 
-```bash
-npm start
-```
+### Installation
+
+1. Install dependencies:
+   ```bash
+   yarn install
+   ```
+
+2. Copy environment file and update values:
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Start development server (auto-restart on changes):
+   ```bash
+   yarn dev
+   ```
+
+4. For production:
+   ```bash
+   yarn start
+   ```
+
+5. Run tests:
+   ```bash
+   yarn test
+   ```
 
 ## Usage
 
