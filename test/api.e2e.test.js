@@ -105,6 +105,8 @@ describe('Better Auth API E2E', () => {
     expect(protectedRes.statusCode).toBe(200);
     expect(protectedRes.body.status).toBe('success');
     expect(protectedRes.body.data.user.email).toBe(email);
+
+
   });
 
   it('should return health check', async () => {
