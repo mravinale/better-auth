@@ -7,7 +7,8 @@ A simple authentication system built with Express and Better Auth, using Bearer 
 - User registration and login with email & password
 - Bearer token authentication (no JWT)
 - Persistent session storage using SQLite
-- RESTful API endpoints for sign-up, sign-in, sign-out, and protected resources
+- All authentication endpoints (`/api/auth/*`) are handled by Better Auth
+- Unified API router (`src/infrastructure/routes.js`) for all custom endpoints under `/api` (e.g., `/api/health`, `/api/protected`)
 
 ## Prerequisites
 
@@ -56,12 +57,11 @@ BASE_URL=http://localhost:3000
 
 ## Available Endpoints
 
-- `GET /health` - Health check endpoint
+- `GET /api/health` - Health check endpoint
 - `POST /api/auth/sign-up/email` - User registration
 - `POST /api/auth/sign-in/email` - User login
 - `POST /api/auth/sign-out` - User logout
 - `GET /api/protected` - Protected endpoint (requires Bearer token)
-- `GET /health` - Health check endpoint
 
 ## Development
 
@@ -91,6 +91,12 @@ Send a POST request to `/api/auth/sign-in/email` with your credentials to receiv
 Send a GET request to `/api/protected` with the Bearer token:
 ```
 Authorization: Bearer <your-session-token>
+```
+
+### 4. Health Check
+Send a GET request to `/api/health` to verify the server is running:
+```
+curl http://localhost:3005/api/health
 ```
 
 ### 4. Log Out
