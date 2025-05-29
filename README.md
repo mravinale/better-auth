@@ -1,12 +1,12 @@
 # Better Auth Demo
 
-A simple authentication system built with Express and Better Auth, using Bearer tokens and persistent SQLite storage.
+A simple authentication system built with Express and Better Auth, using Bearer tokens and persistent PostgreSQL storage.
 
 ## Features
 
 - User registration and login with email & password
 - Bearer token authentication (no JWT)
-- Persistent session storage using SQLite
+- Persistent session storage using PostgreSQL
 - All authentication endpoints (`/api/auth/*`) are handled by Better Auth
 - Unified API router (`src/infrastructure/routes.js`) for all custom endpoints under `/api` (e.g., `/api/health`, `/api/protected`)
 
@@ -14,7 +14,7 @@ A simple authentication system built with Express and Better Auth, using Bearer 
 
 - Node.js 16.x or later
 - npm or yarn
-- SQLite (via better-sqlite3, included by default for persistence)
+- PostgreSQL (running and accessible)
 
 ## Installation
 
@@ -132,7 +132,7 @@ Send a POST request to `/api/auth/sign-out` with the Bearer token in the Authori
 
 ## Database
 
-This project uses SQLite for persistent session and user storage. The database file is `database.sqlite` in the project root.
+This project uses PostgreSQL for persistent session and user storage. You must set up a PostgreSQL database and provide the connection string via the environment variable.
 
 ## Migrations
 
@@ -140,6 +140,22 @@ To generate and run migrations (after changing plugins or schema):
 ```bash
 npx @better-auth/cli@latest generate
 npx @better-auth/cli@latest migrate
+```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+# Server Configuration
+PORT=3005
+NODE_ENV=development
+
+# Better Auth Configuration
+AUTH_SECRET=your-secure-secret-key-here
+BASE_URL=http://localhost:3005
+TRUSTED_ORIGINS=http://localhost:3000
+POSTGRES_CONNECTION_STRING=postgres://username:password@localhost:5432/better-auth
 ```
 
 ## License

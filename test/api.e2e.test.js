@@ -1,11 +1,9 @@
 // test/api.e2e.test.js
-import fs from 'fs';
 import request from 'supertest';
 import express from 'express';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from '../src/infrastructure/auth.js';
 import apiRoutes from '../src/infrastructure/routes.js';
-import Database from 'better-sqlite3';
 
 let server;
 const app = express();
@@ -13,25 +11,11 @@ app.all('/api/auth/*', toNodeHandler(auth));
 app.use(express.json());
 app.use('/api', apiRoutes);
 
-
 beforeAll(async () => {
-  const db = new Database('database.sqlite');
-  // Check for table existence
-  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table'").all().map(r => r.name);
-  const requiredTables = ['user', 'session', 'account'];
-  const missingTables = requiredTables.filter(t => !tables.includes(t));
-  if (missingTables.length > 0) {
-    // Run migration SQL from file
-    const migrationSQL = fs.readFileSync('./better-auth_migrations/2025-05-28T12-55-38.842Z.sql', 'utf8');
-    db.exec(migrationSQL);
-  }
-  // Clean up all rows from user, session, and account tables
-  db.prepare('DELETE FROM session').run();
-  db.prepare('DELETE FROM account').run();
-  db.prepare('DELETE FROM user').run();
-  db.close();
+  // Assumes the PostgreSQL schema is already migrated and clean
   server = app.listen(0);
 });
+
 afterAll((done) => {
   server.close(done);
 });
@@ -43,6 +27,7 @@ describe('Better Auth API E2E', () => {
   const name = 'Test User';
 
   it('should sign up a new user', async () => {
+    console.log('[E2E] About to send sign-up request');
     const res = await request(server)
       .post('/api/auth/sign-up/email')
       .send({ email, password, name });
@@ -54,11 +39,7 @@ describe('Better Auth API E2E', () => {
     expect(res.headers['set-auth-token']).toBeDefined();
     bearerToken = decodeURIComponent(res.headers['set-auth-token']);
     console.log('[TEST DEBUG] Bearer token after signup:', bearerToken);
-    // Log session table contents
-    const db = new Database('database.sqlite');
-    const sessions = db.prepare('SELECT * FROM session').all();
-    console.log('[TEST DEBUG] Session table after signup:', sessions);
-    db.close();
+
   });
 
   it('should access the protected endpoint with Bearer token', async () => {

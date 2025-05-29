@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth"
 import { bearer } from "better-auth/plugins"
-import Database from "better-sqlite3";
+import { Pool } from "pg";
 import dotenv from "dotenv"
 dotenv.config();
 
@@ -15,6 +15,8 @@ export const auth = betterAuth({
         prefix: '/api/auth',
     },
     debug: true,
-    database: new Database("database.sqlite"),
+    database: new Pool({
+        connectionString: process.env.POSTGRES_CONNECTION_STRING,
+    }),
     trustedOrigins: (process.env.TRUSTED_ORIGINS || 'http://localhost:3000').split(','),
 });
