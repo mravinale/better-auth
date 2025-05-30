@@ -1,38 +1,126 @@
-# Better Auth Demo
+# Better Auth Monorepo
 
-A simple authentication system built with Express and Better Auth, using Bearer tokens and persistent PostgreSQL storage.
+A robust authentication and authorization demo using Better Auth, Express, and PostgreSQL.
+
+This monorepo contains two main projects:
+
+- **Api/**: An Express-based API server with protected endpoints and health checks.
+- **IdP/**: The Identity Provider, running Better Auth, handling all `/api/auth/*` endpoints and user/session management.
+
+---
 
 ## Features
-
-- User registration and login with email & password
-- Bearer token authentication (no JWT)
+- User registration and login with email & password (via Better Auth)
 - Persistent session storage using PostgreSQL
-- All authentication endpoints (`/api/auth/*`) are handled by Better Auth
-- Unified API router (`src/infrastructure/routes.js`) for all custom endpoints under `/api` (e.g., `/api/health`, `/api/protected`)
+- All `/api/auth/*` endpoints are handled by Better Auth (no custom logic in API server)
+- Unified API router (`Api/src/infrastructure/routes.js`) for custom endpoints (`/api/health`, `/api/protected`)
+- Full end-to-end (E2E) test flow, including orchestration of both servers
+
+---
 
 ## Prerequisites
-
 - Node.js 16.x or later
-- npm or yarn
+- Yarn (recommended)
 - PostgreSQL (running and accessible)
+- [Optional] `nc` (netcat) for E2E orchestration script
 
-## Installation
+---
 
-1. Clone the repository:
-   ```bash
+## Setup
+
+1. **Clone the repository:**
+   ```sh
    git clone https://github.com/yourusername/better-auth.git
    cd better-auth
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
+2. **Install dependencies for both projects:**
+   ```sh
+   cd Api && yarn install
+   cd ../IdP && yarn install
+   cd ..
    ```
 
-3. Copy `.env.example` to `.env` and update the values:
-   ```bash
-   cp .env.example .env
+3. **Configure environment variables:**
+   - Set `POSTGRES_CONNECTION_STRING` in both the `Api` and `IdP` environments as needed.
+   - You may copy `.env.example` to `.env` in each subproject if provided.
+
+4. **Generate/migrate database schema:**
+   ```sh
+   cd IdP
+   yarn better-auth-cli generate   # or: yarn better-auth-cli migrate
+   cd ..
    ```
+
+---
+
+## Running the Servers
+
+### Start the IdP (Identity Provider)
+```sh
+cd IdP
+yarn dev
+```
+- Runs on [http://localhost:3000](http://localhost:3000)
+
+### Start the API
+```sh
+cd Api
+yarn dev
+```
+- Runs on [http://localhost:3005](http://localhost:3005)
+
+---
+
+## End-to-End (E2E) Tests
+
+The E2E test covers the full authentication flow:
+- User sign-up (handles already existing users)
+- Sign-in to get a session token and cookie
+- Exchange session token for JWT
+- Access a protected endpoint with the JWT
+
+### How to Run E2E Tests
+
+**Just run:**
+```sh
+yarn test
+```
+from the `Api` directory (or project root if you forward the script). This will:
+- Start both IdP and API servers in the background (if not already running)
+- Wait for both to be healthy (using `nc`)
+- Run the Jest E2E test (`Api/test/api.e2e.test.js`)
+- Clean up any servers it started
+
+**Script details:**
+- Orchestration is handled by `Api/test/e2e.sh`
+- The actual test is run via `yarn test:only` (which runs Jest directly)
+
+#### To run only the Jest test (assuming servers are already running):
+```sh
+cd Api
+yarn test:only
+```
+
+---
+
+## Architecture Notes
+- All `/api/auth/*` endpoints are handled by Better Auth (see `IdP` project)
+- The API server (`Api/`) only defines `/api/health` and `/api/protected` endpoints (see `Api/src/infrastructure/routes.js`)
+- JWT verification and session handling are delegated to Better Auth
+- Database: PostgreSQL via the `pg` library and Better Auth's schema
+
+---
+
+## Troubleshooting
+- Ensure PostgreSQL is running and accessible from both projects
+- If E2E script fails to start servers, check logs in `/tmp/idp.log` and `/tmp/api.log`
+- For schema issues, re-run migrations with `@better-auth/cli`
+
+---
+
+For more details, see the code and comments in each file. If you have issues or want to extend the workflow (CI, Docker, etc.), open an issue or PR!
+
 
 4. Start the development server:
    ```bash

@@ -1,7 +1,8 @@
+import 'dotenv/config';
 import express from 'express'; 
-import apiRoutes from './infrastructure/routes.js';
+import apiRoutes from './src/infrastructure/routes.js';
 import swaggerUi from 'swagger-ui-express';
-import swaggerSpec from './infrastructure/swagger.js';
+import swaggerSpec from './src/infrastructure/swagger.js';
 
 const app = express();
 const port = process.env.PORT || 3005;

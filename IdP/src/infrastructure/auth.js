@@ -1,11 +1,11 @@
 import { betterAuth } from "better-auth"
-import { bearer, openAPI } from "better-auth/plugins"
+import { bearer, openAPI, jwt } from "better-auth/plugins"
 import { Pool } from "pg";
 import dotenv from "dotenv"
 dotenv.config();
 
 export const auth = betterAuth({
-    plugins: [bearer(), openAPI()],
+    plugins: [bearer(), openAPI(), jwt()],
     emailAndPassword: {
         enabled: true
     },
