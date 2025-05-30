@@ -1,6 +1,6 @@
-// src/infrastructure/apiRoutes.js
-import express from 'express';
-import { verifySessionToken } from '../middleware/authMiddleware.js';
+// infrastructure/routes.js
+import express from 'express'; 
+import { verifyToken } from '../middleware/authMiddleware.js';
 import { getProtected, healthCheck } from '../controllers/mainController.js';
 
 const router = express.Router();
@@ -9,6 +9,6 @@ const router = express.Router();
 router.get('/health', healthCheck);
 
 // Protected endpoint
-router.get('/protected', verifySessionToken, getProtected);
+router.get('/protected', verifyToken, getProtected);
 
 export default router;
