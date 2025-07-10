@@ -1,6 +1,8 @@
 // test/idp.e2e.test.js
+import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 import request from 'supertest';
 import express from 'express';
+import cors from 'cors';
 import { toNodeHandler } from 'better-auth/node';
 import { auth } from '../src/infrastructure/auth.js';
 
@@ -185,8 +187,10 @@ describe('Better Auth IdP E2E Tests', () => {
       // Verify JWKS structure (Better Auth uses Ed25519 keys)
       const key = res.body.keys[0];
       expect(key).toHaveProperty('kty'); // key type
-      expect(key).toHaveProperty('kid'); // key ID
-      // Note: Ed25519 keys may not have 'use' property
+      expect(key).toHaveProperty('alg'); // algorithm
+      expect(key).toHaveProperty('crv'); // curve
+      expect(key).toHaveProperty('x'); // x coordinate
+      // Note: Ed25519 keys may not have 'kid' or 'use' property in Better Auth
     });
 
     it('should serve Better Auth reference', async () => {

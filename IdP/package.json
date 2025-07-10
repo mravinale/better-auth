@@ -12,7 +12,7 @@
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
     "cli:generate": "npx @better-auth/cli generate --config src/infrastructure/auth.ts",
-    "cli:migrate": "npx @better-auth/cli migrate --config src/infrastructure/auth.ts",
+    "cli:migrate": "npx @better-auth/cli migrate --config src/infrastructure/auth.ts -y",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

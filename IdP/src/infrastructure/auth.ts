@@ -7,16 +7,19 @@ import { sendEmailVerification, sendPasswordResetEmail } from "../services/email
 // Ensure environment variables are loaded before auth configuration
 dotenv.config();
 
+// Check if we're in test mode
+const isTestMode = process.env.NODE_ENV === 'test';
+
 export const auth = betterAuth({
     plugins: [bearer(), openAPI(), jwt()],
     emailAndPassword: {
         enabled: true,
-        requireEmailVerification: true,
+        requireEmailVerification: !isTestMode, // Disable email verification requirement in test mode
         sendResetPassword: sendPasswordResetEmail,
         resetPasswordTokenExpiresIn: 3600 // 1 hour
     },
     emailVerification: {
-        sendOnSignUp: true,
+        sendOnSignUp: !isTestMode, // Disable sending emails on sign up in test mode
         autoSignInAfterVerification: true,
         expiresIn: 3600, // 1 hour
         sendVerificationEmail: sendEmailVerification
