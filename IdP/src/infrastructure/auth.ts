@@ -1,7 +1,11 @@
 import { betterAuth } from "better-auth"
 import { bearer, openAPI, jwt } from "better-auth/plugins"
 import { Pool } from "pg";
+import dotenv from "dotenv";
 import { sendEmailVerification, sendPasswordResetEmail } from "../services/email.js";
+
+// Ensure environment variables are loaded before auth configuration
+dotenv.config();
 
 export const auth = betterAuth({
     plugins: [bearer(), openAPI(), jwt()],
@@ -27,6 +31,6 @@ export const auth = betterAuth({
         connectionString: process.env.DATABASE_URL,
     }),
     trustedOrigins: process.env.TRUSTED_ORIGINS
-    ? process.env.TRUSTED_ORIGINS.split(',')
-    : [process.env.BASE_URL, process.env.FE_URL],
+    ? process.env.TRUSTED_ORIGINS.split(',') 
+    : [process.env.BASE_URL, process.env.FE_URL].filter(Boolean) as string[],
 });

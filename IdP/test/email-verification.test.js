@@ -50,14 +50,14 @@ describe('Email Service Functions', () => {
     emailService = await import('../src/services/email.js');
   });
 
-  it('should export sendVerificationEmail function', () => {
-    expect(emailService.sendVerificationEmail).toBeDefined();
-    expect(typeof emailService.sendVerificationEmail).toBe('function');
-  });
-
   it('should export sendEmailVerification function', () => {
     expect(emailService.sendEmailVerification).toBeDefined();
     expect(typeof emailService.sendEmailVerification).toBe('function');
+  });
+
+  it('should export sendPasswordResetEmail function', () => {
+    expect(emailService.sendPasswordResetEmail).toBeDefined();
+    expect(typeof emailService.sendPasswordResetEmail).toBe('function');
   });
 
   it('should handle missing environment variables gracefully', async () => {

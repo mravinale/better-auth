@@ -44,15 +44,13 @@ describe('Better Auth IdP E2E Tests', () => {
       expect(res.body).toHaveProperty('user');
       expect(res.body.user).toHaveProperty('email', email);
       expect(res.body.user).toHaveProperty('name', name);
+      expect(res.headers['set-auth-token']).toBeDefined();
       
-      // With email verification enabled, user should not be verified initially
-      expect(res.body.user).toHaveProperty('emailVerified', false);
+      sessionToken = decodeURIComponent(res.headers['set-auth-token']);
+      cookie = res.headers['set-cookie']?.find(c => c.startsWith('better-auth.session_token'));
       
-      // Should still get session token (depends on better-auth configuration)
-      if (res.headers['set-auth-token']) {
-        sessionToken = decodeURIComponent(res.headers['set-auth-token']);
-        cookie = res.headers['set-cookie']?.find(c => c.startsWith('better-auth.session_token'));
-      }
+      expect(sessionToken).toBeTruthy();
+      expect(cookie).toBeTruthy();
     }, 10000); // Increased timeout
 
     it('should get current session', async () => {
@@ -127,20 +125,16 @@ describe('Better Auth IdP E2E Tests', () => {
         .post('/api/auth/sign-in/email')
         .send({ email, password });
       
-      // With email verification required, sign in might fail if email not verified
-      if (res.statusCode === 200) {
-        expect(res.body).toHaveProperty('user');
-        expect(res.body.user).toHaveProperty('email', email);
-        
-        if (res.headers['set-auth-token']) {
-          sessionToken = decodeURIComponent(res.headers['set-auth-token']);
-          cookie = res.headers['set-cookie']?.find(c => c.startsWith('better-auth.session_token'));
-        }
-      } else {
-        // If email verification is strictly required, sign in should fail
-        expect(res.statusCode).toBe(400);
-        expect(res.body.message).toContain('email');
-      }
+      expect(res.statusCode).toBe(200);
+      expect(res.body).toHaveProperty('user');
+      expect(res.body.user).toHaveProperty('email', email);
+      expect(res.headers['set-auth-token']).toBeDefined();
+      
+      sessionToken = decodeURIComponent(res.headers['set-auth-token']);
+      cookie = res.headers['set-cookie']?.find(c => c.startsWith('better-auth.session_token'));
+      
+      expect(sessionToken).toBeTruthy();
+      expect(cookie).toBeTruthy();
     });
 
     it('should get session after sign-in', async () => {

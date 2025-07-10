@@ -5,11 +5,11 @@
 
 /**
  * Validates required environment variables (private function)
- * @param {Array<string>} requiredVars - Array of required environment variable names
+ * @param requiredVars - Array of required environment variable names
  * @throws {Error} If any required variable is missing
  */
-const validateEnv = (requiredVars) => {
-  const missing = [];
+const validateEnv = (requiredVars: string[]): void => {
+  const missing: string[] = [];
   
   requiredVars.forEach(varName => {
     if (!process.env[varName]) {
@@ -29,7 +29,7 @@ const validateEnv = (requiredVars) => {
  * This is the main validation function to be called at server startup
  * @throws {Error} If any required variable is missing
  */
-export const validateAppEnv = () => {
+export const validateAppEnv = (): void => {
   // Application environment variables
   const requiredVars = [
     // Server configuration
@@ -39,6 +39,7 @@ export const validateAppEnv = () => {
     'AUTH_SECRET',
     'BASE_URL',
     'DATABASE_URL',
+    'TRUSTED_ORIGINS',
     
     // Email service configuration
     'RESEND_API_KEY',

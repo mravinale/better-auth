@@ -6,7 +6,16 @@
       "Bash(npm test)",
       "Bash(npm test:*)",
       "Bash(rm:*)",
-      "Bash(npm run test:coverage:*)"
+      "Bash(npm run test:coverage:*)",
+      "Bash(mv:*)",
+      "Bash(npm run build:*)",
+      "Bash(rg:*)",
+      "Bash(npm run:*)",
+      "Bash(yarn test)",
+      "Bash(yarn test:*)",
+      "Bash(yarn build)",
+      "Bash(yarn typecheck)",
+      "Bash(yarn start)"
     ],
     "deny": []
   }
