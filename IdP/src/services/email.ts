@@ -1,12 +1,37 @@
 import { Resend } from 'resend';
 
+interface EmailPayload {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+}
+
+interface EmailVerificationPayload {
+  user: User;
+  url: string;
+  token: string;
+}
+
+interface PasswordResetPayload {
+  user: User;
+  url: string;
+  token: string;
+}
+
 /**
  * Singleton pattern for Resend client
  * Ensures only one instance is created and reused
  */
-let resendInstance = null;
+let resendInstance: Resend | null = null;
 
-const getResendClient = () => {
+const getResendClient = (): Resend => {
   if (!resendInstance) {
     resendInstance = new Resend(process.env.RESEND_API_KEY);
     console.log('Resend client initialized');
@@ -14,11 +39,11 @@ const getResendClient = () => {
   return resendInstance;
 };
 
-export const sendEmail = async ({ to, subject, html, text }) => {
+export const sendEmail = async ({ to, subject, html, text }: EmailPayload) => {
     try {
         const resend = getResendClient();
         const { data, error } = await resend.emails.send({
-            from: process.env.FROM_EMAIL,
+            from: process.env.FROM_EMAIL!,
             to,
             subject,
             html,
@@ -38,7 +63,7 @@ export const sendEmail = async ({ to, subject, html, text }) => {
     }
 };
 
-export const sendPasswordResetEmail = async ({ user, url, token }) => {
+export const sendPasswordResetEmail = async ({ user, url, token }: PasswordResetPayload): Promise<void> => {
     // Modify the URL to point to the frontend app
     const frontendUrl = `${process.env.FE_URL}/set-new-password?token=${token}`;
     console.log('Password reset URL:', frontendUrl);
@@ -59,7 +84,7 @@ export const sendPasswordResetEmail = async ({ user, url, token }) => {
 
     const resend = getResendClient();
     const { data, error } = await resend.emails.send({
-        from: process.env.FROM_EMAIL,
+        from: process.env.FROM_EMAIL!,
         to: user.email,
         subject,
         html,
@@ -72,10 +97,9 @@ export const sendPasswordResetEmail = async ({ user, url, token }) => {
     }
 
     console.log('Email sent successfully:', data);
-    return data;
 };
 
-export const sendEmailVerification = async ({ user, url, token }) => {
+export const sendEmailVerification = async ({ user, url, token }: EmailVerificationPayload): Promise<void> => {
     const subject = 'Verify your email';
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -95,7 +119,7 @@ export const sendEmailVerification = async ({ user, url, token }) => {
 
     const resend = getResendClient();
     const { data, error } = await resend.emails.send({
-        from: process.env.FROM_EMAIL,
+        from: process.env.FROM_EMAIL!,
         to: user.email,
         subject,
         html,
@@ -108,5 +132,4 @@ export const sendEmailVerification = async ({ user, url, token }) => {
     }
 
     console.log('Verification email sent successfully:', data);
-    return data;
 };

@@ -12,7 +12,7 @@ dotenv.config();
 validateAppEnv();
 
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || 3000;
 
 // CORS middleware: allow any origin (for development only)
 app.use(cors({
