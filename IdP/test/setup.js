@@ -1,19 +1,43 @@
 // test/setup.js
-// Global test setup for email verification mocking
+import { jest } from '@jest/globals';
+import express from 'express';
 import dotenv from 'dotenv';
+import { toNodeHandler } from 'better-auth/node';
+import { auth } from '../src/infrastructure/auth.ts';
 
-// Load environment variables from .env file
-dotenv.config();
+// Load test environment variables from .env.test file
+dotenv.config({ path: './.env.test' });
 
-process.env.NODE_ENV = 'test'; 
-// Use the same database as development for tests (in a real setup, you'd want a separate test DB)
-process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://mravinale:postgres@localhost:5432/better-auth-test';
-// Use the same AUTH_SECRET as development to prevent JWT key decryption issues
-process.env.AUTH_SECRET = process.env.AUTH_SECRET || 'test-secret';
-process.env.BASE_URL = 'http://localhost:3000';
-process.env.RESEND_API_KEY = 'test-key';
-process.env.FROM_EMAIL = 'test@resend.dev'; // Use Resend's test domain
+// Mock the email service before importing anything that uses it
+jest.unstable_mockModule('../src/services/email.ts', () => ({
+  sendEmailVerification: jest.fn().mockResolvedValue(undefined),
+  sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
+}));
 
-// Note: There is a known issue with Better Auth library that logs a TypeError about
-// Cannot read properties of undefined (reading 'length'). This is expected during testing
-// and does not affect test results.
+export function createTestApp() {
+  const app = express();
+  app.all('/api/auth/*', toNodeHandler(auth));
+  app.use(express.json());
+  return app;
+}
+
+export async function startTestServer(app) {
+  return new Promise((resolve) => {
+    const server = app.listen(0, () => {
+      resolve(server);
+    });
+  });
+}
+
+export async function stopTestServer(server) {
+  await new Promise((resolve, reject) => {
+    server.close((err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+  
+  if (auth.database && typeof auth.database.end === 'function') {
+    await auth.database.end();
+  }
+}

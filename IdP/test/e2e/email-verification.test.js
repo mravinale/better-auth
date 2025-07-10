@@ -1,12 +1,6 @@
 // test/email-verification.test.js
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 
-// Mock the email service before importing anything that uses it
-jest.unstable_mockModule('../src/services/email.js', () => ({
-  sendEmailVerification: jest.fn().mockResolvedValue(undefined),
-  sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
-}));
-
 // Simple test to verify email verification configuration
 describe('Email Verification Configuration', () => {
   let auth;
@@ -17,7 +11,7 @@ describe('Email Verification Configuration', () => {
     process.env.FROM_EMAIL = 'test@example.com';
     
     // Import auth with mocked email service
-    const { auth: authInstance } = await import('../src/infrastructure/auth.js');
+    const { auth: authInstance } = await import('../../src/infrastructure/auth.ts');
     auth = authInstance;
   });
 
@@ -41,7 +35,7 @@ describe('Email Verification Configuration', () => {
   });
 
   it('should include resend dependency', async () => {
-    const pkg = await import('../package.json', { assert: { type: 'json' } });
+    const pkg = await import('../../package.json', { assert: { type: 'json' } });
     expect(pkg.default.dependencies.resend).toBeDefined();
   });
 });
@@ -56,7 +50,7 @@ describe('Email Service Functions', () => {
     process.env.FROM_EMAIL = 'test@example.com';
     
     // Import mocked email service
-    emailService = await import('../src/services/email.js');
+    emailService = await import('../../src/services/email.ts');
   });
 
   it('should export sendEmailVerification function', () => {

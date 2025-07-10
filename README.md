@@ -178,41 +178,78 @@ The IdP includes email verification and password reset functionality using Resen
 
 ### Testing
 
-The project includes comprehensive testing:
+The project includes comprehensive testing with organized test suites:
+
+**Test Structure:**
+```
+test/
+├── .env.test                    # Test environment variables
+├── setup.js                    # Shared test utilities and mocking
+└── e2e/                        # End-to-end test suites
+    ├── auth-flow.test.js           # Authentication flow (7 tests)
+    ├── metadata-endpoints.test.js   # JWKS & reference endpoints (2 tests)
+    ├── error-cases.test.js         # Error handling scenarios (9 tests)
+    ├── token-validation.test.js    # JWT structure validation (1 test)
+    └── email-verification.test.js  # Email service configuration (9 tests)
+```
 
 **Test Types:**
-- **E2E Tests**: Full authentication flow testing
+- **E2E Tests**: Full authentication flow testing (28 tests total)
 - **Unit Tests**: Email service and configuration testing
 - **Integration Tests**: Database and API endpoint testing
+- **Error Testing**: Comprehensive error case coverage
 
 **Test Features:**
-- Automatic email service mocking
-- Environment-based configuration
-- Database transaction isolation
-- JWT token validation
-- Error case coverage
+- **Modular Organization**: Split test files by functionality
+- **Shared Setup**: Centralized test utilities and server management
+- **Email Mocking**: Uses `jest.unstable_mockModule()` for ES module mocking
+- **Environment Isolation**: Separate `.env.test` configuration
+- **TypeScript Support**: Full ES module and TypeScript compatibility
+- **Database Management**: Automatic setup/teardown with connection pooling
 
 **Run Tests:**
 ```bash
-yarn test                    # Run all tests
+yarn test                    # Run all tests (28 tests across 5 suites)
 yarn test:watch              # Watch mode
-yarn test:coverage           # With coverage
+yarn test:coverage           # With coverage report
+yarn test --verbose          # Detailed test output
+```
+
+**Individual Test Suites:**
+```bash
+yarn test test/e2e/auth-flow.test.js           # Authentication flow tests
+yarn test test/e2e/error-cases.test.js         # Error handling tests
+yarn test test/e2e/metadata-endpoints.test.js  # JWKS endpoint tests
+yarn test test/e2e/token-validation.test.js    # JWT validation tests
+yarn test test/e2e/email-verification.test.js  # Email service tests
 ```
 
 ### Environment Configuration
 
-The IdP supports environment-based configuration:
+The IdP supports environment-based configuration with dedicated test setup:
 
-**Development/Production:**
+**Development/Production (.env):**
 - Email verification enabled
 - Full email sending via Resend
 - Debug logging enabled
+- Production database
 
-**Testing:**
-- Email verification disabled
-- Mock email functions
-- Separate test database
-- Reduced logging
+**Testing (.env.test):**
+```env
+NODE_ENV=test
+DATABASE_URL=postgresql://mravinale:postgres@localhost:5432/better-auth-test
+AUTH_SECRET=test-secret
+BASE_URL=http://localhost:3000
+RESEND_API_KEY=test-key
+FROM_EMAIL=test@resend.dev
+```
+
+**Test Environment Features:**
+- Email verification disabled automatically
+- Mock email functions via `jest.unstable_mockModule()`
+- Separate test database for isolation
+- Consistent AUTH_SECRET to prevent JWT key issues
+- Reduced logging for cleaner test output
 
 ---
 
@@ -231,17 +268,59 @@ Interactive API documentation is available at: [http://localhost:3005/docs](http
 
 ## End-to-End (E2E) Testing
 
-The E2E tests cover the complete authentication flow:
+The E2E tests are organized into focused test suites covering the complete authentication system:
 
 ### Test Coverage
-- User registration with email verification
-- Sign-in and session management
-- JWT token exchange and validation
-- Protected endpoint access
-- Error cases and validation
-- JWKS endpoint functionality
+
+**Authentication Flow Tests (auth-flow.test.js):**
+- User registration with email verification (mocked)
+- Session cookie management
+- JWT token generation and exchange
+- Sign-in and sign-out flow
+- Session validation
+
+**Error Cases Tests (error-cases.test.js):**
+- Missing email/password validation
+- Invalid credentials handling
+- Duplicate user registration
+- Unauthorized access attempts
+- Token validation errors
+
+**Metadata Endpoints Tests (metadata-endpoints.test.js):**
+- JWKS (JSON Web Key Set) endpoint
+- Better Auth reference endpoint
+- Key structure validation
+
+**Token Validation Tests (token-validation.test.js):**
+- JWT structure verification
+- Header and payload validation
+- Timestamp verification
+- Claims validation
+
+**Email Verification Tests (email-verification.test.js):**
+- Email service configuration
+- Mock function validation
+- Environment-based settings
+- Dependency verification
 
 ### Running E2E Tests
+
+**From IdP directory:**
+```bash
+cd IdP
+yarn test                    # Run all 28 tests across 5 suites
+yarn test:watch              # Run in watch mode
+yarn test --verbose          # Detailed output with test names
+```
+
+**Run specific test suites:**
+```bash
+yarn test test/e2e/auth-flow.test.js           # 7 authentication tests
+yarn test test/e2e/error-cases.test.js         # 9 error handling tests
+yarn test test/e2e/metadata-endpoints.test.js  # 2 endpoint tests
+yarn test test/e2e/token-validation.test.js    # 1 JWT validation test
+yarn test test/e2e/email-verification.test.js  # 9 email configuration tests
+```
 
 **From API directory:**
 ```bash
@@ -252,19 +331,17 @@ yarn test
 This will:
 - Start both IdP and API servers automatically
 - Wait for health checks
-- Run comprehensive test suite
+- Run comprehensive API integration test suite
 - Clean up processes
 
-**From IdP directory:**
-```bash
-cd IdP
-yarn test
-```
+### Test Features
 
-This runs:
-- Authentication flow tests
-- Email service tests
-- Configuration validation tests
+- **Isolated Test Environment**: Each test suite runs with fresh server instances
+- **Automatic Mocking**: Email services automatically mocked using Jest
+- **Database Isolation**: Tests use separate test database configuration
+- **TypeScript Support**: Full ES module compatibility with TypeScript source files
+- **Parallel Execution**: Jest runs test suites in parallel for faster execution
+- **Comprehensive Coverage**: 28 tests covering authentication, errors, JWT, and email functionality
 
 ---
 
@@ -312,9 +389,13 @@ This runs:
 - Validate JWKS endpoint accessibility
 
 **Test Failures:**
-- Ensure test database exists
-- Check NODE_ENV=test configuration
-- Verify email mocking setup
+- Ensure test database exists and is accessible
+- Check `.env.test` file exists with correct configuration
+- Verify NODE_ENV=test is set in test environment
+- Ensure TypeScript source files exist (`.ts` not `.js`)
+- Check email mocking setup uses `jest.unstable_mockModule()`
+- Verify import paths are correct for test file organization
+- Ensure AUTH_SECRET consistency between dev and test environments
 
 ### Logs and Debugging
 
@@ -323,9 +404,22 @@ This runs:
 - API: Express server logs
 
 **Test Logs:**
-- Jest output with test results
+- Jest output with test results and detailed test names
 - Mocked email service logs
 - Database connection status
+- Individual test suite execution details
+
+**Test Debugging:**
+```bash
+# Run specific test suite with verbose output
+yarn test test/e2e/auth-flow.test.js --verbose
+
+# Run tests with coverage to identify gaps
+yarn test:coverage
+
+# Debug test environment issues
+yarn test --detectOpenHandles --forceExit
+```
 
 ---
 
