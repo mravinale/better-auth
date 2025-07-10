@@ -1,22 +1,27 @@
 // test/setup.js
-import { jest } from '@jest/globals';
+import "reflect-metadata";
 import express from 'express';
 import dotenv from 'dotenv';
 import { toNodeHandler } from 'better-auth/node';
-import { auth } from '../src/infrastructure/auth.ts';
+import { container } from "tsyringe";
+import { ConfigService } from "../src/services/ConfigService.js";
+import { EmailService } from "../src/services/EmailService.js";
+import { AuthService } from "../src/services/AuthService.js";
 
 // Load test environment variables from .env.test file
 dotenv.config({ path: './.env.test' });
 
-// Mock the email service before importing anything that uses it
-jest.unstable_mockModule('../src/services/email.ts', () => ({
-  sendEmailVerification: jest.fn().mockResolvedValue(undefined),
-  sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
-}));
+// Register services with dependency injection container
+container.register("IConfigService", { useClass: ConfigService });
+container.register("IEmailService", { useClass: EmailService });
+container.register("IAuthService", { useClass: AuthService });
+
+export const testContainer = container;
 
 export function createTestApp() {
   const app = express();
-  app.all('/api/auth/*', toNodeHandler(auth));
+  const authService = testContainer.resolve('IAuthService');
+  app.all('/api/auth/*', toNodeHandler(authService.getAuthInstance()));
   app.use(express.json());
   return app;
 }
@@ -37,7 +42,13 @@ export async function stopTestServer(server) {
     });
   });
   
-  if (auth.database && typeof auth.database.end === 'function') {
-    await auth.database.end();
+  try {
+    const authService = testContainer.resolve('IAuthService');
+    const authInstance = authService.getAuthInstance();
+    if (authInstance.database && typeof authInstance.database.end === 'function') {
+      await authInstance.database.end();
+    }
+  } catch (error) {
+    console.log('Error during test cleanup:', error.message);
   }
 }
