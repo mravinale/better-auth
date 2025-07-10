@@ -1,11 +1,24 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY || 'test-api-key');
+/**
+ * Singleton pattern for Resend client
+ * Ensures only one instance is created and reused
+ */
+let resendInstance = null;
 
-export const sendVerificationEmail = async ({ to, subject, html, text }) => {
+const getResendClient = () => {
+  if (!resendInstance) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY);
+    console.log('Resend client initialized');
+  }
+  return resendInstance;
+};
+
+export const sendEmail = async ({ to, subject, html, text }) => {
     try {
+        const resend = getResendClient();
         const { data, error } = await resend.emails.send({
-            from: process.env.FROM_EMAIL || 'noreply@yourdomain.com',
+            from: process.env.FROM_EMAIL,
             to,
             subject,
             html,
@@ -25,38 +38,75 @@ export const sendVerificationEmail = async ({ to, subject, html, text }) => {
     }
 };
 
+export const sendPasswordResetEmail = async ({ user, url, token }) => {
+    // Modify the URL to point to the frontend app
+    const frontendUrl = `${process.env.FE_URL}/set-new-password?token=${token}`;
+    console.log('Password reset URL:', frontendUrl);
+    
+    const subject = 'Reset your password';
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Reset Your Password</h2>
+            <p>Hi ${user.name || user.email},</p>
+            <p>Please click the link below to reset your password. This link will expire soon.</p>
+            <div style="margin: 20px 0;">
+                <a href="${frontendUrl}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    Reset Password
+                </a>
+            </div>
+            <p>If you didn't request this, you can safely ignore this email.</p>
+        </div>`;
+
+    const resend = getResendClient();
+    const { data, error } = await resend.emails.send({
+        from: process.env.FROM_EMAIL,
+        to: user.email,
+        subject,
+        html,
+        text: `Reset your password using this link: ${frontendUrl}`
+    });
+
+    if (error) {
+        console.error('Error sending email:', error);
+        throw new Error('Failed to send verification email');
+    }
+
+    console.log('Email sent successfully:', data);
+    return data;
+};
+
 export const sendEmailVerification = async ({ user, url, token }) => {
-    const subject = 'Verify your email address';
+    const subject = 'Verify your email';
     const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2>Verify Your Email Address</h2>
             <p>Hi ${user.name || user.email},</p>
-            <p>Please click the link below to verify your email address:</p>
+            <p>Thank you for signing up! Please click the button below to verify your email address.</p>
             <div style="margin: 20px 0;">
                 <a href="${url}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                     Verify Email
                 </a>
             </div>
-            <p>If you didn't request this verification, you can safely ignore this email.</p>
-            <p>This link will expire in 1 hour.</p>
-        </div>
-    `;
-    const text = `
-        Verify Your Email Address
-        
-        Hi ${user.name || user.email},
-        
-        Please click the link below to verify your email address:
-        ${url}
-        
-        If you didn't request this verification, you can safely ignore this email.
-        This link will expire in 1 hour.
-    `;
+            <p>If you didn't create an account with us, you can safely ignore this email.</p>
+            <p>This verification link will expire soon.</p>
+        </div>`;
+    
+    const text = `Verify your email using this link: ${url}`;
 
-    return await sendVerificationEmail({
+    const resend = getResendClient();
+    const { data, error } = await resend.emails.send({
+        from: process.env.FROM_EMAIL,
         to: user.email,
         subject,
         html,
         text
     });
+
+    if (error) {
+        console.error('Error sending verification email:', error);
+        throw new Error('Failed to send verification email');
+    }
+
+    console.log('Verification email sent successfully:', data);
+    return data;
 };

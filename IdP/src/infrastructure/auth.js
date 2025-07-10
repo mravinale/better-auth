@@ -1,15 +1,15 @@
 import { betterAuth } from "better-auth"
 import { bearer, openAPI, jwt } from "better-auth/plugins"
 import { Pool } from "pg";
-import dotenv from "dotenv"
-import { sendEmailVerification } from "../services/email.js";
-dotenv.config();
+import { sendEmailVerification, sendPasswordResetEmail } from "../services/email.js";
 
 export const auth = betterAuth({
     plugins: [bearer(), openAPI(), jwt()],
     emailAndPassword: {
         enabled: true,
-        requireEmailVerification: true
+        requireEmailVerification: true,
+        sendResetPassword: sendPasswordResetEmail,
+        resetPasswordTokenExpiresIn: 3600 // 1 hour
     },
     emailVerification: {
         sendOnSignUp: true,
@@ -17,8 +17,8 @@ export const auth = betterAuth({
         expiresIn: 3600, // 1 hour
         sendVerificationEmail: sendEmailVerification
     },
-    secret: process.env.AUTH_SECRET || 'dev-secret-key',
-    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    secret: process.env.AUTH_SECRET,
+    baseUrl: process.env.BASE_URL,
     api: {
         prefix: '/api/auth',
     },
@@ -26,5 +26,7 @@ export const auth = betterAuth({
     database: new Pool({
         connectionString: process.env.DATABASE_URL,
     }),
-    trustedOrigins: (process.env.TRUSTED_ORIGINS || 'http://localhost:3000').split(','),
+    trustedOrigins: process.env.TRUSTED_ORIGINS
+    ? process.env.TRUSTED_ORIGINS.split(',')
+    : [process.env.BASE_URL, process.env.FE_URL],
 });
