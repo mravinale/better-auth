@@ -11,8 +11,8 @@
     "test": "node --experimental-vm-modules node_modules/.bin/jest --forceExit",
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch",
     "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --coverage",
-    "cli:generate": "npx @better-auth/cli generate --config src/infrastructure/auth.ts",
-    "cli:migrate": "npx @better-auth/cli migrate --config src/infrastructure/auth.ts -y",
+    "cli:generate": "npx @better-auth/cli generate --config src/auth.config.ts",
+    "cli:migrate": "npx @better-auth/cli migrate --config src/auth.config.ts -y",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
