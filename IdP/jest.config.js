@@ -33,6 +33,7 @@ export default {
     '^../src/(.*)\.js$': '<rootDir>/src/$1.ts',
     '^../services/(.*)\.js$': '<rootDir>/src/services/$1.ts',
     '^../utils/(.*)\.js$': '<rootDir>/src/utils/$1.ts',
-    '^../infrastructure/(.*)\.js$': '<rootDir>/src/infrastructure/$1.ts'
+    '^../infrastructure/(.*)\.js$': '<rootDir>/src/infrastructure/$1.ts',
+    '^../auth\\.config\\.js$': '<rootDir>/src/auth.config.ts'
   }
 };

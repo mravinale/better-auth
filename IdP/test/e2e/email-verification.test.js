@@ -13,7 +13,7 @@ describe('Email Verification Configuration', () => {
     // Import auth service through test container
     const { testContainer } = await import('../setup.js');
     const authService = testContainer.resolve('IAuthService');
-    auth = authService.getAuthInstance();
+    auth = authService.authInstance;
   });
 
   it('should have email verification disabled in test mode', () => {

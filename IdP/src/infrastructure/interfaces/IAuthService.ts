@@ -1,3 +1,4 @@
 export interface IAuthService {
-  getAuthInstance(): any;
+  /** Better Auth instance */
+  authInstance: any;
 }

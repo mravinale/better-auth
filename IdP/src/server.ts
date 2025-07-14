@@ -30,7 +30,7 @@ app.use(cors({
 }));
 
 // Mount the Better Auth handler - this must come before express.json()
-app.all('/api/auth/*', toNodeHandler(authService.getAuthInstance()));
+app.all('/api/auth/*', toNodeHandler(authService.authInstance));
 
 // Parse JSON bodies
 app.use(express.json());

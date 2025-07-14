@@ -21,7 +21,7 @@ export const testContainer = container;
 export function createTestApp() {
   const app = express();
   const authService = testContainer.resolve('IAuthService');
-  app.all('/api/auth/*', toNodeHandler(authService.getAuthInstance()));
+  app.all('/api/auth/*', toNodeHandler(authService.authInstance));
   app.use(express.json());
   return app;
 }
@@ -44,7 +44,7 @@ export async function stopTestServer(server) {
   
   try {
     const authService = testContainer.resolve('IAuthService');
-    const authInstance = authService.getAuthInstance();
+    const authInstance = authService.authInstance;
     if (authInstance.database && typeof authInstance.database.end === 'function') {
       await authInstance.database.end();
     }

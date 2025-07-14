@@ -1,43 +1,40 @@
-import { injectable, inject } from "tsyringe";
+import "reflect-metadata";
+import { inject, singleton } from "tsyringe";
 import { betterAuth } from "better-auth";
-import { bearer, openAPI, jwt } from "better-auth/plugins";
+import { authConfig as baseAuthConfig } from "../auth.config.js";
 import { Pool } from "pg";
 import { IAuthService } from "../infrastructure/interfaces/IAuthService.js";
 import type { IConfigService } from "../infrastructure/interfaces/IConfigService.js";
 import type { IEmailService } from "../infrastructure/interfaces/IEmailService.js";
 
-@injectable()
+@singleton()
 export class AuthService implements IAuthService {
-  private authInstance: ReturnType<typeof betterAuth>;
+  public readonly authInstance: ReturnType<typeof betterAuth>;
 
   constructor(
     @inject("IConfigService") private configService: IConfigService,
     @inject("IEmailService") private emailService: IEmailService
   ) {
-    this.authInstance = betterAuth({
-      plugins: [bearer(), openAPI(), jwt()],
+    const runtimeConfig = {
+      ...baseAuthConfig,
       emailAndPassword: {
-        enabled: true,
+        ...baseAuthConfig.emailAndPassword,
         requireEmailVerification: !this.configService.isTestMode(),
-        sendResetPassword: this.emailService.sendPasswordResetEmail.bind(this.emailService),
-        resetPasswordTokenExpiresIn: 3600,
+        sendResetPassword: (payload: any) => this.emailService.sendPasswordResetEmail(payload),
       },
       emailVerification: {
+        ...baseAuthConfig.emailVerification,
         sendOnSignUp: !this.configService.isTestMode(),
-        autoSignInAfterVerification: true,
-        expiresIn: 3600,
-        sendVerificationEmail: this.emailService.sendEmailVerification.bind(this.emailService),
+        sendVerificationEmail: (payload: any) => this.emailService.sendEmailVerification(payload),
       },
       secret: this.configService.getAuthSecret(),
-      baseURL: this.configService.getBaseUrl(),
-      database: new Pool({
-        connectionString: this.configService.getDatabaseUrl(),
-      }),
+      baseUrl: this.configService.getBaseUrl(),
+      database: new Pool({ connectionString: this.configService.getDatabaseUrl() }),
       trustedOrigins: this.configService.getTrustedOrigins(),
-    });
+    } as const;
+
+    this.authInstance = betterAuth(runtimeConfig);
   }
 
-  getAuthInstance() {
-    return this.authInstance;
-  }
+  // No getter needed; authInstance is public
 }
