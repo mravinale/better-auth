@@ -1,10 +1,10 @@
 import 'dotenv/config';
 import { betterAuth } from 'better-auth';
-import { bearer, openAPI, jwt, organization } from 'better-auth/plugins';
+import { bearer, openAPI, jwt, organization, admin } from 'better-auth/plugins';
 import { Pool } from 'pg';
 
 const authConfig = {
-  plugins: [bearer(), openAPI(), jwt(), organization()],
+  plugins: [bearer(), openAPI(), jwt(), organization(), admin() ],
   emailAndPassword: { 
     enabled: true, 
     requireEmailVerification: true, 
