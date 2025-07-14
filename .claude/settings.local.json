@@ -15,7 +15,11 @@
       "Bash(yarn test:*)",
       "Bash(yarn build)",
       "Bash(yarn typecheck)",
-      "Bash(yarn start)"
+      "Bash(yarn start)",
+      "Bash(NODE_ENV=test npm run cli:migrate)",
+      "Bash(DATABASE_URL=postgresql://mravinale:postgres@localhost:5432/better-auth-test npx @better-auth/cli migrate --config src/infrastructure/auth.ts -y)",
+      "Bash(grep:*)",
+      "Bash(npm start)"
     ],
     "deny": []
   }
