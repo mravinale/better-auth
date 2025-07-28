@@ -1,36 +1,37 @@
-# Better Auth Monorepo
+# Better Auth Identity Provider (IdP)
 
-A robust authentication and authorization demo using Better Auth, Express, PostgreSQL, and TypeScript.
+A robust authentication and authorization Identity Provider using Better Auth, Express, PostgreSQL, and TypeScript.
 
-This monorepo contains two main projects:
-
-- **Api/**: An Express-based API server with protected endpoints and health checks
-- **IdP/**: The Identity Provider using Better Auth, handling all `/api/auth/*` endpoints and user/session management
+This project provides a complete authentication service that handles user registration, login, email verification, password reset, session management, and organization management through Better Auth's comprehensive plugin system.
 
 ---
 
 ## Features
 
 ### Authentication & Authorization
-- User registration and login with email & password (via Better Auth)
-- Email verification with Resend integration
-- Password reset functionality
-- JWT token generation and validation
-- Session management with PostgreSQL storage
-- CORS support for frontend integration
+- **User Management**: Registration, login, and profile management with email & password
+- **Email Verification**: Automated email verification with customizable templates
+- **Password Reset**: Secure password reset flow with token-based validation
+- **JWT & Bearer Tokens**: Full JWT token generation and Bearer token support
+- **Session Management**: Persistent sessions with PostgreSQL storage
+- **Organization Support**: Multi-tenant organization management with invitations
+- **Admin Panel**: Administrative endpoints for user and organization management
+- **OpenAPI Integration**: Auto-generated API documentation and reference
 
 ### Developer Experience
-- **TypeScript**: Full TypeScript implementation with type safety
-- **Testing**: Comprehensive E2E and unit tests with Jest
-- **Email Mocking**: Automated email service mocking for tests
-- **Hot Reload**: Development server with automatic restart on changes
-- **API Documentation**: Swagger/OpenAPI integration
+- **TypeScript**: Full TypeScript implementation with strict type safety
+- **Dependency Injection**: Clean architecture with TSyringe IoC container
+- **Testing**: Comprehensive E2E test suite with Jest (28+ tests)
+- **Email Mocking**: Automated email service mocking for development and testing
+- **Hot Reload**: Development server with automatic restart via tsx
+- **Better Auth CLI**: Database migrations and schema generation
 
 ### Production Ready
-- Environment-based configuration
-- Database migrations with Better Auth CLI
-- Error handling and logging
-- Health check endpoints
+- **Environment Configuration**: Comprehensive environment variable validation
+- **Database Migrations**: Automated schema management with Better Auth CLI
+- **CORS Support**: Configurable CORS for frontend integration
+- **Error Handling**: Structured error responses and logging
+- **Security**: Trusted origins, secure session handling, and token validation
 
 ---
 
@@ -46,21 +47,20 @@ This monorepo contains two main projects:
 
 ### 1. Clone and Install
 ```bash
-git clone https://github.com/yourusername/better-auth.git
-cd better-auth
+git clone https://github.com/yourusername/better-auth-idp.git
+cd better-auth-idp
 
-# Install dependencies for both projects
-cd Api && yarn install
-cd ../IdP && yarn install
-cd ..
+# Install dependencies
+yarn install
 ```
 
 ### 2. Configure Environment Variables
 
-**IdP Configuration:**
+Create a `.env` file in the project root:
 ```bash
-cd IdP
-cp .env.example .env
+cp .env.example .env  # If you have an example file
+# OR create manually:
+touch .env
 ```
 
 Edit `.env` with your configuration:
@@ -86,8 +86,6 @@ TRUSTED_ORIGINS=http://localhost:3000,http://localhost:8080
 
 ### 3. Database Setup
 ```bash
-cd IdP
-
 # Generate migration files
 yarn cli:generate
 
@@ -95,27 +93,20 @@ yarn cli:generate
 yarn cli:migrate
 ```
 
-### 4. Start Development Servers
+### 4. Start Development Server
 
-**Start the IdP (Identity Provider):**
 ```bash
-cd IdP
 yarn dev
 ```
-- Runs on [http://localhost:3000](http://localhost:3000)
-- Handles all `/api/auth/*` endpoints
 
-**Start the API:**
-```bash
-cd Api
-yarn dev
-```
-- Runs on [http://localhost:3005](http://localhost:3005)
-- Provides `/api/health` and `/api/protected` endpoints
+- **Server**: Runs on [http://localhost:3000](http://localhost:3000)
+- **Auth Endpoints**: All `/api/auth/*` endpoints available
+- **API Reference**: [http://localhost:3000/api/auth/reference](http://localhost:3000/api/auth/reference)
+- **OpenAPI Docs**: Auto-generated documentation for all endpoints
 
 ---
 
-## IdP (Identity Provider) Details
+## Project Structure
 
 ### Available Scripts
 
@@ -138,35 +129,105 @@ yarn test:coverage    # Run tests with coverage report
 yarn typecheck        # Run TypeScript type checking
 ```
 
+### Directory Structure
+
+```
+better-auth-idp/
+├── src/
+│   ├── auth.config.ts              # Better Auth configuration
+│   ├── server.ts                   # Express server setup
+│   ├── infrastructure/
+│   │   └── interfaces/             # TypeScript interfaces
+│   │       ├── IAuthService.ts     # Auth service interface
+│   │       ├── IConfigService.ts   # Config service interface
+│   │       └── IEmailService.ts    # Email service interface
+│   └── services/
+│       ├── AuthService.ts          # Better Auth service implementation
+│       ├── ConfigService.ts        # Environment configuration service
+│       └── EmailService.ts         # Email service with Resend integration
+├── test/
+│   ├── setup.js                    # Test configuration and mocking
+│   ├── mocks/
+│   │   └── EmailService.mock.js    # Email service mock for testing
+│   └── e2e/
+│       ├── auth-flow.test.js       # Authentication flow tests (7 tests)
+│       ├── error-cases.test.js     # Error handling tests (9 tests)
+│       ├── email-verification.test.js # Email service tests (9 tests)
+│       ├── metadata-endpoints.test.js # JWKS & reference tests (2 tests)
+│       └── token-validation.test.js   # JWT validation tests (1 test)
+├── dist/                           # Compiled JavaScript output
+├── coverage/                       # Test coverage reports
+├── package.json                    # Dependencies and scripts
+├── tsconfig.json                   # TypeScript configuration
+├── jest.config.js                  # Jest testing configuration
+└── README.md                       # This file
+```
+
 ### Dependencies
 
 **Core Dependencies:**
-- `better-auth` ^1.2.8 - Authentication framework
+- `better-auth` ^1.2.8 - Authentication framework with plugins
 - `express` ^4.18.2 - Web server framework
-- `cors` ^2.8.5 - CORS middleware
-- `pg` ^8.16.0 - PostgreSQL client
-- `resend` ^4.6.0 - Email service
-- `dotenv` ^16.3.1 - Environment variable loader
+- `cors` ^2.8.5 - CORS middleware for cross-origin requests
+- `pg` ^8.16.0 - PostgreSQL client for database operations
+- `resend` ^4.6.0 - Email service for verification and password reset
+- `dotenv` ^16.3.1 - Environment variable management
+- `tsyringe` ^4.10.0 - Dependency injection container
+- `jose` ^6.0.11 - JWT operations and validation
+- `jsonwebtoken` ^9.0.2 - JWT token handling
+- `swagger-jsdoc` ^6.2.8 - OpenAPI documentation generation
+- `swagger-ui-express` ^5.0.1 - API documentation UI
+- `reflect-metadata` ^0.2.2 - Metadata reflection for decorators
 
 **Development Dependencies:**
-- `typescript` ^5.3.3 - TypeScript compiler
-- `tsx` ^4.7.1 - TypeScript execution engine
-- `jest` ^29.7.0 - Testing framework
-- `supertest` ^7.1.1 - HTTP testing library
-- `@types/*` - TypeScript type definitions
+- `tsx` ^4.7.1 - TypeScript execution engine for development
+- `jest` ^29.7.0 - Testing framework with ES module support
+- `supertest` ^7.1.1 - HTTP testing library for API tests
+- `@types/*` - TypeScript type definitions for all dependencies
+- `nodemon` ^3.1.10 - Development server with auto-restart
+- `ts-jest` ^29.4.0 - Jest TypeScript preprocessor
 
 ### Authentication Endpoints
 
-All authentication endpoints are handled by Better Auth:
+All authentication endpoints are handled by Better Auth with comprehensive plugin support:
 
+**Core Authentication:**
 - `POST /api/auth/sign-up/email` - User registration with email verification
-- `POST /api/auth/sign-in/email` - User login
-- `POST /api/auth/sign-out` - User logout
-- `GET /api/auth/session` - Get current session
-- `GET /api/auth/token` - Exchange session for JWT
-- `GET /api/auth/jwks` - JSON Web Key Set
-- `POST /api/auth/request-password-reset` - Request password reset
-- `POST /api/auth/reset-password` - Reset password
+- `POST /api/auth/sign-in/email` - User login with email/password
+- `POST /api/auth/sign-out` - User logout and session termination
+- `GET /api/auth/session` - Get current user session
+- `POST /api/auth/update-user` - Update user profile information
+
+**Token Management:**
+- `GET /api/auth/token` - Exchange session for JWT token
+- `GET /api/auth/jwks` - JSON Web Key Set for token verification
+- `POST /api/auth/bearer-token` - Generate Bearer tokens
+
+**Password Management:**
+- `POST /api/auth/forget-password` - Request password reset email
+- `POST /api/auth/reset-password` - Reset password with token
+- `POST /api/auth/change-password` - Change password (authenticated)
+
+**Email Verification:**
+- `POST /api/auth/send-verification-email` - Send verification email
+- `POST /api/auth/verify-email` - Verify email with token
+
+**Organization Management:**
+- `POST /api/auth/organization/create` - Create new organization
+- `POST /api/auth/organization/invite-member` - Invite organization member
+- `GET /api/auth/organization/list-members` - List organization members
+- `POST /api/auth/organization/remove-member` - Remove organization member
+- `POST /api/auth/organization/set-active` - Set active organization
+
+**Admin Endpoints:**
+- `GET /api/auth/admin/list-users` - List all users (admin only)
+- `GET /api/auth/admin/list-sessions` - List user sessions (admin only)
+- `POST /api/auth/admin/revoke-session` - Revoke user session (admin only)
+- `POST /api/auth/admin/impersonate` - Impersonate user (admin only)
+
+**Metadata & Documentation:**
+- `GET /api/auth/reference` - Interactive API reference and documentation
+- `GET /api/auth/openapi.json` - OpenAPI specification
 
 ### Email Integration
 
