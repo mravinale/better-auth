@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { inject, singleton } from "tsyringe";
 import { betterAuth } from "better-auth";
+import { bearer, openAPI, jwt, organization, admin } from "better-auth/plugins";
 import { authConfig as baseAuthConfig } from "../auth.config.js";
 import { Pool } from "pg";
 import { IAuthService } from "../infrastructure/interfaces/IAuthService.js";
@@ -27,13 +28,22 @@ export class AuthService implements IAuthService {
         sendOnSignUp: !this.configService.isTestMode(),
         sendVerificationEmail: (payload: any) => this.emailService.sendEmailVerification(payload),
       },
+      plugins: [
+        bearer(),
+        openAPI(),
+        jwt(),
+        organization({
+          sendInvitationEmail: (payload: any) => this.emailService.sendOrganizationInvitation(payload),
+        }),
+        admin()
+      ],
       secret: this.configService.getAuthSecret(),
       baseUrl: this.configService.getBaseUrl(),
       database: new Pool({ connectionString: this.configService.getDatabaseUrl() }),
       trustedOrigins: this.configService.getTrustedOrigins(),
     } as const;
 
-    this.authInstance = betterAuth(runtimeConfig);
+    this.authInstance = betterAuth(runtimeConfig as any);
   }
 
   // No getter needed; authInstance is public

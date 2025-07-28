@@ -23,8 +23,26 @@ export interface PasswordResetPayload {
   token: string;
 }
 
+export interface OrganizationInvitationPayload {
+  id: string;
+  email: string;
+  role: string;
+  organizationId: string;
+  organization: {
+    id: string;
+    name: string;
+    slug?: string;
+  };
+  inviter: {
+    user: User;
+  };
+  teamId?: string;
+  expiresAt: Date;
+}
+
 export interface IEmailService {
   sendEmail(payload: EmailPayload): Promise<any>;
   sendPasswordResetEmail(payload: PasswordResetPayload): Promise<void>;
   sendEmailVerification(payload: EmailVerificationPayload): Promise<void>;
+  sendOrganizationInvitation(payload: OrganizationInvitationPayload): Promise<void>;
 }

@@ -1,6 +1,6 @@
 import { injectable, inject } from "tsyringe";
 import { Resend } from "resend";
-import { IEmailService, EmailPayload, EmailVerificationPayload, PasswordResetPayload } from "../infrastructure/interfaces/IEmailService.js";
+import { IEmailService, EmailPayload, EmailVerificationPayload, PasswordResetPayload, OrganizationInvitationPayload } from "../infrastructure/interfaces/IEmailService.js";
 import type { IConfigService } from "../infrastructure/interfaces/IConfigService.js";
 
 @injectable()
@@ -101,5 +101,48 @@ export class EmailService implements IEmailService {
     }
 
     console.log("Verification email sent successfully:", data);
+  }
+
+  async sendOrganizationInvitation({ id, email, role, organization, inviter }: OrganizationInvitationPayload): Promise<void> {
+    const inviteLink = `${this.configService.getFeUrl()}/accept-invitation/${id}`;
+    console.log("Organization invitation URL:", inviteLink);
+
+    const subject = `Invitation to join ${organization.name}`;
+    const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>You're Invited to Join ${organization.name}</h2>
+            <p>Hi,</p>
+            <p>${inviter.user.name || inviter.user.email} has invited you to join <strong>${organization.name}</strong> as a <strong>${role}</strong>.</p>
+            <div style="margin: 20px 0;">
+                <a href="${inviteLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                    Accept Invitation
+                </a>
+            </div>
+            <p>If you don't want to join this organization, you can safely ignore this email.</p>
+            <p>This invitation link will expire soon.</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+            <p style="font-size: 12px; color: #666;">
+                Invited by: ${inviter.user.email}<br>
+                Organization: ${organization.name}<br>
+                Role: ${role}
+            </p>
+        </div>`;
+
+    const text = `You've been invited to join ${organization.name} as a ${role}. Accept the invitation using this link: ${inviteLink}`;
+
+    const { data, error } = await this.resendClient.emails.send({
+      from: this.configService.getFromEmail(),
+      to: email,
+      subject,
+      html,
+      text,
+    });
+
+    if (error) {
+      console.error("Error sending organization invitation email:", error);
+      throw new Error("Failed to send organization invitation email");
+    }
+
+    console.log("Organization invitation email sent successfully:", data);
   }
 }

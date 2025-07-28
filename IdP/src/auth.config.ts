@@ -4,18 +4,20 @@ import { bearer, openAPI, jwt, organization, admin } from 'better-auth/plugins';
 import { Pool } from 'pg';
 
 const authConfig = {
-  plugins: [bearer(), openAPI(), jwt(), organization(), admin() ],
+  plugins: [bearer(), openAPI(), jwt(), organization({
+    sendInvitationEmail: async (_payload: any) => {} // CLI placeholder
+  }), admin() ],
   emailAndPassword: { 
     enabled: true, 
     requireEmailVerification: true, 
     resetPasswordTokenExpiresIn: 3600,
-    sendResetPassword: async (payload: any) => {} // CLI placeholder
+    sendResetPassword: async (_payload: any) => {} // CLI placeholder
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     expiresIn: 3600,
-    sendVerificationEmail: async (payload: any) => {} // CLI placeholder
+    sendVerificationEmail: async (_payload: any) => {} // CLI placeholder
   },
   secret: process.env.AUTH_SECRET!,
   baseUrl: process.env.BASE_URL!,
