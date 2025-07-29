@@ -12,7 +12,7 @@ node_modules
 dist
 dist-ssr
 *.local
-.coverage
+coverage
 .claude
 
 # Editor directories and files
